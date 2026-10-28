@@ -1,0 +1,30 @@
+{
+  "name": "stock-watchlist-dashboard",
+  "version": "1.0.0",
+  "description": "Full Stack Stock Watchlist Dashboard - College FSD Project",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "stock-watchlist",
+    "nodejs",
+    "express",
+    "mongodb",
+    "mongoose",
+    "college-project",
+    "fsd"
+  ],
+  "author": "Student Developer",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongoose": "^8.4.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.3"
+  }
+}
