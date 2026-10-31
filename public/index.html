@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Stock Watchlist Dashboard - Full Stack Development College Project using HTML5, CSS3, Vanilla JavaScript, Node.js, Express.js, and MongoDB Atlas.">
+  <title>Stock Watchlist Dashboard | College FSD Project</title>
+  
+  <!-- Modern Google Font: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ========================================== -->
+  <!-- 1. NAVIGATION BAR                          -->
+  <!-- ========================================== -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <div class="nav-brand">
+        <span class="brand-icon">📈</span>
+        <div class="brand-text">
+          <h1 class="brand-title">Stock Watchlist Dashboard</h1>
+          <span class="brand-badge">Full Stack Development Project</span>
+        </div>
+      </div>
+
+      <nav class="nav-links">
+        <a href="#dashboard" class="nav-link active">📊 Dashboard</a>
+        <a href="#add-stock" class="nav-link">➕ Add Stock</a>
+        <a href="#watchlist" class="nav-link">📋 Watchlist</a>
+        <a href="#about" class="nav-link">🎓 About Project</a>
+      </nav>
+
+      <!-- System Health Indicator -->
+      <div class="system-status" id="systemStatusBadge" title="Backend and Database Status">
+        <span class="status-dot status-checking" id="statusDot"></span>
+        <span class="status-text" id="statusText">Checking Server...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- 2. MAIN CONTENT AREA                       -->
+  <!-- ========================================== -->
+  <main class="container main-content" id="dashboard">
+
+    <!-- Welcome Section -->
+    <section class="welcome-banner">
+      <div class="welcome-content">
+        <h2>👋 Welcome to Your Personal Stock Watchlist</h2>
+        <p>
+          Track your favorite company stocks, manage your portfolio watch items, and perform complete CRUD operations powered by 
+          <strong>Node.js</strong>, <strong>Express.js</strong>, and <strong>MongoDB Atlas</strong>.
+        </p>
+      </div>
+      <div class="welcome-actions">
+        <button class="btn btn-primary" onclick="scrollToSection('add-stock')">
+          ➕ Add New Stock
+        </button>
+        <button class="btn btn-secondary" onclick="fetchStocks()">
+          🔄 Refresh Data
+        </button>
+      </div>
+    </section>
+
+    <!-- Notification Toast Container -->
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+    <!-- ========================================== -->
+    <!-- 3. DASHBOARD SUMMARY METRICS CARDS          -->
+    <!-- ========================================== -->
+    <section class="metrics-grid" aria-label="Dashboard Summary Statistics">
+      
+      <!-- Total Stocks Card -->
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-title">Total Stocks</span>
+          <span class="metric-icon bg-blue">💼</span>
+        </div>
+        <div class="metric-value" id="totalStocksCount">0</div>
+        <div class="metric-subtext">Active stocks in watchlist</div>
+      </div>
+
+      <!-- Gainers Card (Sample Demo Data) -->
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-title">Showing Gain</span>
+          <span class="metric-icon bg-green">🟢</span>
+        </div>
+        <div class="metric-value text-green" id="gainingStocksCount">0</div>
+        <div class="metric-subtext">
+          <span class="badge-demo">Demo Data</span> Positive trend indicator
+        </div>
+      </div>
+
+      <!-- Losers Card (Sample Demo Data) -->
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-title">Showing Loss</span>
+          <span class="metric-icon bg-red">🔴</span>
+        </div>
+        <div class="metric-value text-red" id="losingStocksCount">0</div>
+        <div class="metric-subtext">
+          <span class="badge-demo">Demo Data</span> Negative trend indicator
+        </div>
+      </div>
+
+      <!-- Database Status Card -->
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-title">Database Storage</span>
+          <span class="metric-icon bg-purple">🗄️</span>
+        </div>
+        <div class="metric-value text-purple" id="dbStatusMetric">MongoDB</div>
+        <div class="metric-subtext" id="lastUpdatedText">Collection: stocks</div>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- 4. ADD NEW STOCK FORM SECTION              -->
+    <!-- ========================================== -->
+    <section class="card form-card" id="add-stock">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span class="card-icon">➕</span>
+          <div>
+            <h3>Add Stock to Watchlist</h3>
+            <p class="card-subtitle">Fill in the company details to save a new stock into MongoDB Atlas</p>
+          </div>
+        </div>
+      </div>
+
+      <form id="addStockForm" class="stock-form" novalidate>
+        <div class="form-grid">
+          
+          <!-- Stock Symbol -->
+          <div class="form-group">
+            <label for="stockSymbol">
+              Stock Symbol <span class="required">*</span>
+            </label>
+            <div class="input-wrapper">
+              <span class="input-icon">🏷️</span>
+              <input 
+                type="text" 
+                id="stockSymbol" 
+                name="symbol" 
+                placeholder="e.g. AAPL, TSLA, INFY" 
+                maxlength="10" 
+                required
+                autocomplete="off"
+              >
+            </div>
+            <small class="form-hint">Enter ticker symbol (automatically converted to uppercase).</small>
+          </div>
+
+          <!-- Company Name -->
+          <div class="form-group">
+            <label for="companyName">
+              Company Name <span class="required">*</span>
+            </label>
+            <div class="input-wrapper">
+              <span class="input-icon">🏢</span>
+              <input 
+                type="text" 
+                id="companyName" 
+                name="companyName" 
+                placeholder="e.g. Apple Inc., Tesla, Infosys" 
+                maxlength="100" 
+                required
+              >
+            </div>
+            <small class="form-hint">Official registered name of the corporation.</small>
+          </div>
+
+          <!-- Stock Exchange (Optional) -->
+          <div class="form-group">
+            <label for="stockExchange">
+              Stock Exchange <span class="optional">(Optional)</span>
+            </label>
+            <div class="input-wrapper">
+              <span class="input-icon">🏛️</span>
+              <select id="stockExchange" name="exchange">
+                <option value="NASDAQ">NASDAQ (National Association)</option>
+                <option value="NYSE">NYSE (New York Stock Exchange)</option>
+                <option value="NSE">NSE (National Stock Exchange - India)</option>
+                <option value="BSE">BSE (Bombay Stock Exchange - India)</option>
+                <option value="LSE">LSE (London Stock Exchange)</option>
+                <option value="OTHER">Other / Global Exchange</option>
+              </select>
+            </div>
+            <small class="form-hint">Select the exchange where this stock is traded.</small>
+          </div>
+
+        </div>
+
+        <!-- Form Action Buttons -->
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="submitStockBtn">
+            <span class="btn-text">Add to Watchlist</span>
+            <span class="btn-spinner" style="display: none;">⏳ Saving...</span>
+          </button>
+          <button type="reset" class="btn btn-outline" id="resetFormBtn">
+            Clear Form
+          </button>
+        </div>
+
+        <!-- Inline Form Message (Accessible error/success banner) -->
+        <div id="formMessage" class="form-message" style="display: none;"></div>
+      </form>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- 5. SEARCH & FILTER SECTION                 -->
+    <!-- ========================================== -->
+    <section class="card search-card">
+      <div class="search-header">
+        <div>
+          <h3>🔍 Search & Filter Watchlist</h3>
+          <p class="search-disclaimer">
+            * Note: This filters within your saved MongoDB watchlist (client-side search). It does not search external market APIs.
+          </p>
+        </div>
+        <div class="search-counter" id="searchResultsCount">
+          Showing 0 stocks
+        </div>
+      </div>
+
+      <div class="search-bar-wrapper">
+        <span class="search-icon">🔎</span>
+        <input 
+          type="text" 
+          id="searchInput" 
+          placeholder="Filter by Stock Symbol (e.g. AAPL) or Company Name (e.g. Apple)..." 
+          aria-label="Filter stocks"
+        >
+        <button type="button" id="clearSearchBtn" class="btn-clear" title="Clear Search" style="display: none;">
+          ✖
+        </button>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- 6. WATCHLIST TABLE SECTION                 -->
+    <!-- ========================================== -->
+    <section class="card table-card" id="watchlist">
+      <div class="card-header table-header">
+        <div class="card-title-group">
+          <span class="card-icon">📋</span>
+          <div>
+            <h3>Your Watchlist Items</h3>
+            <p class="card-subtitle">Stored in MongoDB Atlas collection: <code>stocks</code></p>
+          </div>
+        </div>
+        <div class="table-actions">
+          <button class="btn btn-sm btn-outline" onclick="fetchStocks()" title="Reload from MongoDB">
+            🔄 Refresh Table
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="tableLoading" class="table-state-box" style="display: none;">
+        <div class="spinner"></div>
+        <p>Fetching stock records from MongoDB Atlas...</p>
+      </div>
+
+      <!-- Table Wrapper -->
+      <div class="table-responsive" id="tableContainer">
+        <table class="watchlist-table" id="watchlistTable">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Symbol</th>
+              <th scope="col">Company Name</th>
+              <th scope="col">Exchange</th>
+              <th scope="col">Trend (Demo)</th>
+              <th scope="col">Date Added</th>
+              <th scope="col" class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="watchlistTableBody">
+            <!-- Dynamically populated via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State View -->
+      <div id="tableEmpty" class="table-state-box" style="display: none;">
+        <div class="empty-icon">📭</div>
+        <h4>No Stocks in Your Watchlist Yet</h4>
+        <p>Start tracking your favorite companies by adding your first stock using the form above.</p>
+        <button class="btn btn-primary btn-sm" onclick="scrollToSection('add-stock')">
+          ➕ Add Your First Stock
+        </button>
+      </div>
+
+      <!-- Search No Results State -->
+      <div id="tableNoSearchMatch" class="table-state-box" style="display: none;">
+        <div class="empty-icon">🔍</div>
+        <h4>No Matching Stocks Found</h4>
+        <p>No saved stock matches your current search keyword. Try a different ticker or company name.</p>
+        <button class="btn btn-outline btn-sm" onclick="clearSearch()">
+          Clear Search Filter
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- 7. ABOUT THE PROJECT SECTION               -->
+    <!-- ========================================== -->
+    <section class="card about-card" id="about">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span class="card-icon">🎓</span>
+          <div>
+            <h3>About This Project & Architecture</h3>
+            <p class="card-subtitle">College Full Stack Development (FSD) Coursework</p>
+          </div>
+        </div>
+      </div>
+      <div class="about-grid">
+        <div class="about-item">
+          <h4>🎨 Frontend Layer</h4>
+          <p>
+            Built using semantic <strong>HTML5</strong>, responsive <strong>CSS3</strong>, and <strong>Vanilla JavaScript</strong>. 
+            Uses native <code>fetch()</code> API for asynchronous HTTP communication with the Express backend.
+          </p>
+        </div>
+        <div class="about-item">
+          <h4>⚙️ Backend Layer</h4>
+          <p>
+            Powered by <strong>Node.js</strong> and <strong>Express.js</strong>. Provides clean REST API endpoints for 
+            <code>GET</code>, <code>POST</code>, and <code>DELETE</code> operations, input validation, and JSON response formatting.
+          </p>
+        </div>
+        <div class="about-item">
+          <h4>🗄️ Database Layer</h4>
+          <p>
+            Cloud-hosted <strong>MongoDB Atlas</strong> database named <code>stock_watchlist</code>. 
+            <strong>Mongoose ODM</strong> enforces schema models, data types, and unique constraints for ticker symbols.
+          </p>
+        </div>
+        <div class="about-item">
+          <h4>🔒 Security & Best Practices</h4>
+          <p>
+            Environment variables stored in <code>.env</code> using <code>dotenv</code>, unique indexing to prevent duplicate stocks, 
+            CORS support, and safe DOM manipulation to prevent XSS vulnerabilities.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- 8. STOCK DETAILS MODAL                     -->
+  <!-- ========================================== -->
+  <div id="stockDetailsModal" class="modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon">📊</span>
+          <h3 id="modalTitle">Stock Information</h3>
+        </div>
+        <button type="button" class="modal-close" onclick="closeStockDetailsModal()" aria-label="Close Modal">✕</button>
+      </div>
+
+      <div class="modal-body">
+        
+        <!-- Stock Hero Overview -->
+        <div class="modal-stock-hero">
+          <div class="modal-badge-wrapper">
+            <span class="stock-symbol-badge large" id="modalSymbol">AAPL</span>
+            <span class="stock-exchange-badge" id="modalExchange">NASDAQ</span>
+          </div>
+          <h2 class="modal-company" id="modalCompanyName">Apple Inc.</h2>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="modal-details-grid">
+          
+          <div class="detail-box">
+            <span class="detail-label">MongoDB ID</span>
+            <span class="detail-value mono" id="modalMongoId">6650...</span>
+          </div>
+
+          <div class="detail-box">
+            <span class="detail-label">Date Added to Watchlist</span>
+            <span class="detail-value" id="modalAddedAt">October 27, 2026</span>
+          </div>
+
+          <!-- Educational Demonstration Market Metrics -->
+          <div class="detail-box demo-box">
+            <span class="detail-label">
+              Sample Market Price <span class="badge-demo">Demo</span>
+            </span>
+            <span class="detail-value font-bold" id="modalDemoPrice">$185.50</span>
+          </div>
+
+          <div class="detail-box demo-box">
+            <span class="detail-label">
+              Daily Change (Sample) <span class="badge-demo">Demo</span>
+            </span>
+            <span class="detail-value font-bold" id="modalDemoChange">+1.45 (+0.78%)</span>
+          </div>
+
+        </div>
+
+        <!-- Educational Disclaimer Alert -->
+        <div class="info-alert">
+          <span class="alert-icon">ℹ️</span>
+          <p>
+            <strong>Educational Demonstration Note:</strong> The stock symbol, company name, exchange, and date are retrieved directly 
+            from your <strong>MongoDB Atlas</strong> database. Prices and daily percentage changes are sample demonstration values 
+            illustrating financial dashboard presentation without requiring paid third-party market data subscriptions.
+          </p>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeStockDetailsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 9. DELETE CONFIRMATION MODAL               -->
+  <!-- ========================================== -->
+  <div id="deleteConfirmModal" class="modal-overlay" style="display: none;" role="dialog" aria-modal="true">
+    <div class="modal-card modal-confirm">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon text-red">⚠️</span>
+          <h3>Confirm Removal</h3>
+        </div>
+        <button type="button" class="modal-close" onclick="closeDeleteModal()" aria-label="Close Modal">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p>Are you sure you want to remove <strong id="deleteStockSymbolName">this stock</strong> from your watchlist?</p>
+        <p class="text-muted text-sm">This will permanently delete the document record from your MongoDB Atlas database collection.</p>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeDeleteModal()">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Yes, Delete Stock</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 10. FOOTER                                 -->
+  <!-- ========================================== -->
+  <footer class="footer">
+    <div class="container footer-container">
+      <div class="footer-top">
+        <div class="footer-info">
+          <h4>Stock Watchlist Dashboard</h4>
+          <p>Full Stack Web Development Project | Academic Demonstration</p>
+        </div>
+        <div class="footer-meta">
+          <p><strong>Technologies:</strong> HTML5 • CSS3 • JavaScript • Node.js • Express.js • MongoDB Atlas • Mongoose</p>
+          <p><strong>Database:</strong> <code>stock_watchlist</code> | <strong>Collection:</strong> <code>stocks</code></p>
+        </div>
+      </div>
+      <hr class="footer-divider">
+      <div class="footer-bottom">
+        <p class="copyright">
+          Designed and developed for academic evaluation. Built as a student learning project.
+        </p>
+        <p class="disclaimer">
+          ⚠️ <strong>Disclaimer:</strong> This application is developed strictly for educational and portfolio presentation purposes. 
+          It does not provide investment recommendations or financial trading services.
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Link Vanilla JavaScript -->
+  <script src="script.js"></script>
+</body>
+</html>
